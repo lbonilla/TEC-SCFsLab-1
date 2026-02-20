@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  20 FEB 2026 11:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  20 FEB 2026 11:56
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -434,17 +434,17 @@ l.150 ... del servidor Modbus (Modbus\_server.py)]
 <02_ModbusPythonServer.png, id=210, 1927.2pt x 1084.05pt>
 File: 02_ModbusPythonServer.png Graphic file (type png)
 <use 02_ModbusPythonServer.png>
-Package pdftex.def Info: 02_ModbusPythonServer.png  used on input line 187.
+Package pdftex.def Info: 02_ModbusPythonServer.png  used on input line 188.
 (pdftex.def)             Requested size: 455.24411pt x 256.07509pt.
 
 
 [5]
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 199.
-<03_ModbusClient.png, id=244, 1927.2pt x 1084.05pt>
+(Font)              <5> on input line 200.
+<03_ModbusClient.png, id=245, 1927.2pt x 1084.05pt>
 File: 03_ModbusClient.png Graphic file (type png)
 <use 03_ModbusClient.png>
-Package pdftex.def Info: 03_ModbusClient.png  used on input line 225.
+Package pdftex.def Info: 03_ModbusClient.png  used on input line 226.
 (pdftex.def)             Requested size: 455.24411pt x 256.07509pt.
 
 
@@ -452,19 +452,19 @@ Package pdftex.def Info: 03_ModbusClient.png  used on input line 225.
 pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.229 
+l.230 
        <./02_ModbusPythonServer.png>]
 
 [7
 pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.261 | 
+l.262 | 
           sid 0x1: <./03_ModbusClient.png>]
-<04_ScapyPackage.png, id=280, 1927.2pt x 1084.05pt>
+<04_ScapyPackage.png, id=281, 1927.2pt x 1084.05pt>
 File: 04_ScapyPackage.png Graphic file (type png)
 <use 04_ScapyPackage.png>
-Package pdftex.def Info: 04_ScapyPackage.png  used on input line 315.
+Package pdftex.def Info: 04_ScapyPackage.png  used on input line 316.
 (pdftex.def)             Requested size: 455.24411pt x 256.07509pt.
 
 
@@ -474,21 +474,21 @@ Package pdftex.def Info: 04_ScapyPackage.png  used on input line 315.
 pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.352  
+l.353  
           pkt[TCP].ack = ackNr <./04_ScapyPackage.png>]
 
 [10]
-Overfull \hbox (1.0098pt too wide) in paragraph at lines 475--475
+Overfull \hbox (1.0098pt too wide) in paragraph at lines 476--476
 []\OT1/cmr/bx/n/12 Vulnerabilidad| 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 479--479
+Underfull \hbox (badness 10000) in paragraph at lines 480--480
 []\OT1/cmr/m/n/12 Sin Au-ten-ti-ca-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 485--485
+Underfull \hbox (badness 10000) in paragraph at lines 486--486
 []\OT1/cmr/m/n/12 Exposici^^Son de
  []
 
@@ -500,12 +500,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 485--485
 pdfTeX warning (ext4): destination with the same identifier (name{table.2}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.532 
+l.533 
       
 pdfTeX warning (ext4): destination with the same identifier (name{table.3}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.532 
+l.533 
       ]
 
 [13] (./main.aux
@@ -520,18 +520,18 @@ Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: C975BFF706A72774DA47032D10DFA295;6528.
  ) 
 Here is how much of TeX's memory you used:
- 13759 strings out of 473190
- 211841 string characters out of 5715801
- 1006134 words of memory out of 5000000
- 36644 multiletter control sequences out of 15000+600000
+ 13761 strings out of 473190
+ 211864 string characters out of 5715801
+ 1011141 words of memory out of 5000000
+ 36645 multiletter control sequences out of 15000+600000
  564996 words of font info for 57 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  75i,11n,79p,447b,2034s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb>
-Output written on main.pdf (13 pages, 2587194 bytes).
+Output written on main.pdf (13 pages, 2587315 bytes).
 PDF statistics:
- 505 PDF objects out of 1000 (max. 8388607)
- 463 compressed objects within 5 object streams
- 228 named destinations out of 1000 (max. 500000)
+ 507 PDF objects out of 1000 (max. 8388607)
+ 465 compressed objects within 5 object streams
+ 229 named destinations out of 1000 (max. 500000)
  277 words of extra memory for PDF output out of 10000 (max. 10000000)
 

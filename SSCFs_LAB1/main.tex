@@ -117,7 +117,7 @@ Se instalaron los paquetes necesarios para ejecutar el servidor Modbus:
 \begin{lstlisting}[language=bash, caption=Instalación de paquetes en Ubuntu]
 sudo apt update
 sudo apt install python3-pip wireshark -y
-sudo pip3 install pymodbus
+sudo pip3 install pymodbus==2.5.3
 \end{lstlisting}
 
 \subsubsection{En Kali Linux (Atacante)}
@@ -149,7 +149,8 @@ Se creó un script en Python para iniciar un servidor Modbus TCP asíncrono util
 
 \begin{lstlisting}[language=Python, caption=Código del servidor Modbus (Modbus\_server.py)]
 #!/usr/bin/env python3
-from pymodbus.server import StartTcpServer
+# pymodbus 2.5.3
+from pymodbus.server.sync import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext

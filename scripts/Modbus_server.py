@@ -2,64 +2,59 @@
 """
 Modbus TCP Server - Para ejecutar en Ubuntu (192.168.1.66)
 
-Servidor Modbus TCP usando pyModbus 3.x
-Este servidor simula un dispositivo industrial con registros accesibles.
+Servidor Modbus TCP usando pyModbus 2.5.3
+
+Instalacion:
+    pip3 install pymodbus==2.5.3
 
 Uso:
-    sudo python3 Modbus_server.py
+    python3 Modbus_server.py
 """
 
-from pymodbus.server import StartTcpServer
-from pymodbus.datastore import (
-    ModbusSequentialDataBlock,
-    ModbusServerContext,
-    ModbusSlaveContext,
-)
+from pymodbus.server.sync import StartTcpServer
+from pymodbus.datastore import ModbusSequentialDataBlock
+from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+from pymodbus.device import ModbusDeviceIdentification
+
+# Puerto del servidor (5020 no requiere sudo, 502 requiere sudo)
+PORT = 5020
 
 
 def run_server():
     """Inicia el servidor Modbus TCP"""
 
-    # Crear bloques de datos con valor inicial 17 (100 registros cada uno)
-    # Discrete Inputs (read-only bits)
-    di_block = ModbusSequentialDataBlock(0, [17]*100)
-    # Coils (read-write bits)
-    co_block = ModbusSequentialDataBlock(0, [17]*100)
-    # Holding Registers (read-write 16-bit)
-    hr_block = ModbusSequentialDataBlock(0, [17]*100)
-    # Input Registers (read-only 16-bit)
-    ir_block = ModbusSequentialDataBlock(0, [17]*100)
-
-    # Crear contexto del esclavo
-    slave_context = ModbusSlaveContext(
-        di=di_block,
-        co=co_block,
-        hr=hr_block,
-        ir=ir_block
+    # Crear datastore con datos de prueba (valor 17 en 100 registros)
+    store = ModbusSlaveContext(
+        di=ModbusSequentialDataBlock(0, [17]*100),  # Discrete Inputs
+        co=ModbusSequentialDataBlock(0, [17]*100),  # Coils
+        hr=ModbusSequentialDataBlock(0, [17]*100),  # Holding Registers
+        ir=ModbusSequentialDataBlock(0, [17]*100)   # Input Registers
     )
 
-    # Crear contexto del servidor (single=True significa un solo esclavo)
-    server_context = ModbusServerContext(slaves=slave_context, single=True)
+    context = ModbusServerContext(slaves=store, single=True)
 
-    # Mostrar informacion del servidor
+    # Configurar identificacion del servidor
+    identity = ModbusDeviceIdentification()
+    identity.VendorName = 'PyModbus Inc.'
+    identity.ProductCode = 'PM'
+    identity.VendorUrl = 'https://github.com/pymodbus-dev/pymodbus'
+    identity.ProductName = 'Modbus Server'
+    identity.ModelName = 'PyModbus'
+    identity.MajorMinorRevision = '1.0'
+
+    # Mostrar informacion
     print("=" * 50)
     print("MODBUS TCP SERVER")
     print("=" * 50)
-    print("Vendor:  PyModbus Inc.")
-    print("Product: Modbus Server 1.0")
-    print("Address: 0.0.0.0:502")
-    print("=" * 50)
-    print("Registros inicializados con valor: 17")
-    print("Cantidad de registros: 100 por tipo")
+    print(f"Vendor:  {identity.VendorName}")
+    print(f"Product: {identity.ProductName} {identity.MajorMinorRevision}")
+    print(f"Address: 0.0.0.0:{PORT}")
     print("=" * 50)
     print("Servidor iniciado. Presione Ctrl+C para detener.")
     print("=" * 50)
 
-    # Iniciar servidor TCP en puerto 502
-    StartTcpServer(
-        context=server_context,
-        address=("0.0.0.0", 502)
-    )
+    # Iniciar servidor
+    StartTcpServer(context, identity=identity, address=("0.0.0.0", PORT))
 
 
 if __name__ == "__main__":

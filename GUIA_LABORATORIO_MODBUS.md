@@ -35,7 +35,7 @@ sudo apt update
 sudo apt-get install python3-pip -y
 
 # Instalar pyModbus
-sudo pip3 install pymodbus
+sudo pip3 install pymodbus==2.5.3
 ```
 
 ---
@@ -73,8 +73,8 @@ nano Modbus_server.py
 '''
 Modbus TCP Server usando pyModbus
 '''
-# Importar librerias
-from pymodbus.server import StartTcpServer
+# Importar librerias (pymodbus 2.5.3)
+from pymodbus.server.sync import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
@@ -92,7 +92,7 @@ context = ModbusServerContext(slaves=store, single=True)
 identity = ModbusDeviceIdentification()
 identity.VendorName = 'PyModbus Inc.'
 identity.ProductCode = 'PM'
-identity.VendorUrl = 'https://github.com/riptideio/pyModbus'
+identity.VendorUrl = 'https://github.com/riptideio/pyModbus'I haa
 identity.ProductName = 'Modbus Server'
 identity.ModelName = 'PyModbus'
 identity.MajorMinorRevision = '1.0'
