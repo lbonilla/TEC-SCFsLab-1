@@ -1,0 +1,22 @@
+# Ejecutar este script para corregir automáticamente
+sudo python3 << 'EOF'
+import re
+import glob
+
+for filepath in glob.glob('/usr/lib/python3/dist-packages/Modbus/*.py'):
+    with open(filepath, 'r') as f:
+        content = f.read()
+
+    # Fix 1: "except Exception,e:" -> "except Exception as e:"
+    content = re.sub(r'except (\w+),\s*(\w+):', r'except \1 as \2:', content)
+
+    # Fix 2: "print "text"" -> "print("text")"
+    content = re.sub(r'print\s+"([^"]*)"', r'print("\1")', content)
+    content = re.sub(r"print\s+'([^']*)'", r"print('\1')", content)
+
+    with open(filepath, 'w') as f:
+        f.write(content)
+    print(f'Corregido: {filepath}')
+
+print('Listo!')
+EOF
