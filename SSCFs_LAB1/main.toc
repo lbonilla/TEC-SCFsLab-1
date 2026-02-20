@@ -1,0 +1,33 @@
+\babel@toc {spanish}{}\relax 
+\contentsline {section}{\numberline {1}Introducción}{3}{section.1}%
+\contentsline {subsection}{\numberline {1.1}¿Qué es Modbus TCP/IP?}{3}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}¿Por qué es inseguro?}{3}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Objetivo del laboratorio}{3}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Entorno de Laboratorio}{3}{subsection.1.4}%
+\contentsline {section}{\numberline {2}Breaking Modbus}{4}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Instalación de paquetes}{4}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}En Ubuntu (Servidor Modbus)}{4}{subsubsection.2.1.1}%
+\contentsline {subsubsection}{\numberline {2.1.2}En Kali Linux (Atacante)}{4}{subsubsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.2}Configuración del Servidor Modbus}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Comunicación con modbus-cli}{6}{subsection.2.3}%
+\contentsline {subsubsection}{\numberline {2.3.1}Lectura de Coils}{6}{subsubsection.2.3.1}%
+\contentsline {subsubsection}{\numberline {2.3.2}Escritura de valores (sin autenticación)}{6}{subsubsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.4}Escaneo con Nmap}{7}{subsection.2.4}%
+\contentsline {subsubsection}{\numberline {2.4.1}Descubrimiento de hosts}{7}{subsubsection.2.4.1}%
+\contentsline {subsubsection}{\numberline {2.4.2}Escaneo de puertos}{7}{subsubsection.2.4.2}%
+\contentsline {subsubsection}{\numberline {2.4.3}Script de descubrimiento Modbus}{7}{subsubsection.2.4.3}%
+\contentsline {section}{\numberline {3}Using Python and Scapy to Communicate over Modbus}{8}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Configuración de Scapy para Modbus}{8}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Deshabilitación de RST automático}{8}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Creación de paquetes Modbus con Scapy}{8}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Script de comunicación Modbus con TCP Handshake}{9}{subsection.3.4}%
+\contentsline {section}{\numberline {4}Replaying Captured Modbus Packets}{10}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Captura de tráfico con Wireshark}{10}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Exportación de paquete como Hex Stream}{10}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Importación y manipulación en Scapy}{10}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Modificación y reenvío}{11}{subsection.4.4}%
+\contentsline {section}{\numberline {5}Análisis de Vulnerabilidades}{11}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Vulnerabilidades identificadas}{11}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Códigos de función Modbus utilizados}{12}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Conclusiones}{12}{section.6}%
+\contentsline {section}{\numberline {7}Referencias}{13}{section.7}%
