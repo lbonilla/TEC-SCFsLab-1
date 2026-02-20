@@ -148,8 +148,8 @@ sudo pip install scapy
 Se creó un script en Python para iniciar un servidor Modbus TCP asíncrono utilizando la biblioteca pyModbus:
 
 \begin{lstlisting}[language=Python, caption=Código del servidor Modbus (Modbus\_server.py)]
-#!/usr/bin/env python
-from pymodbus.server.async import StartTcpServer
+#!/usr/bin/env python3
+from pymodbus.server import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
@@ -179,7 +179,7 @@ StartTcpServer(context, identity=identity, address=("0.0.0.0", 502))
 El servidor se inició con el siguiente comando:
 
 \begin{lstlisting}[language=bash]
-sudo python Modbus_server.py
+sudo python3 Modbus_server.py
 \end{lstlisting}
 
 \begin{figure}[H]

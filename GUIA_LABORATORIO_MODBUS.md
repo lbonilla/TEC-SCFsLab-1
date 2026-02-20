@@ -69,12 +69,12 @@ nano Modbus_server.py
 **Copiar el siguiente código:**
 
 ```python
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
-Asynchronous Modbus Server Built in Python using the pyModbus module
+Modbus TCP Server usando pyModbus
 '''
-# Import the libraries we need
-from pymodbus.server.async import StartTcpServer
+# Importar librerias
+from pymodbus.server import StartTcpServer
 from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
@@ -105,7 +105,7 @@ StartTcpServer(context, identity=identity, address=("0.0.0.0", 502))
 **Ejecutar el servidor:**
 
 ```bash
-sudo python Modbus_server.py
+sudo python3 Modbus_server.py
 ```
 
 > ⚠️ **Mantener esta terminal abierta** - El servidor debe estar corriendo para las pruebas
